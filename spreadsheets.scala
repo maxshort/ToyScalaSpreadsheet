@@ -24,9 +24,8 @@
 // 3.5 Formula versus results mode.
 // 4. Implement some insertion operators
 // 5. How to handle text/numbers that are too big for standard cell size??? 
-//==
-// 4.1 Handle unlimited columns
 // 4.25 More mature parsing of both commands and formulas (E.g. whitespace)
+///===
 // 4.5 Error checking (bounds checking, circular reference check) ,
 // Easy but typedef the Sheet for all the 2d arrays
 // 6. View port - sheets too big.
@@ -35,7 +34,9 @@
       // -- useful for testing.
 // n. Would probably want a help command
 // n1. Save/load
-
+// n2. Columns beyond Z
+// n3. Wild: some kind of api like as a backing DB ???
+// n4. Functions - like sort perhaps...could go through common spreadsheet applications
 /*
     A     B     C     D     E     F     G     H     I     J
 1 _____ _____ _____ _____ _____ _____ _____ _____ _____ _____ 
@@ -70,8 +71,6 @@ class Cell(var value: ParsedCellValue):
 // internalLocation is where it is in the actual 2d array.
 class ColumnLocation(internalLocation: Int):
 	def toUserDescription: String =
-		//TODO: Obviously won't work beyond 26 but that's probably enough for our purposes right now.
-		// I think we'd need to go powers and then subtract out whatever went to the higher digits
 		return (internalLocation + 65).toChar.toString
 		
 	// Returns immutable
@@ -83,7 +82,7 @@ class ColumnLocation(internalLocation: Int):
 		
 //TODO: Skipping wrapping this in Object for now...same with all other factory methods like this.
 def colFromUserDescription(userDescription: String): ColumnLocation =
-	//TODO: Have not completely tested/verified this. Should be good enough for what we're doing.
+	// Note: did not think much beyond Z but put this in anyway.
 	new ColumnLocation((userDescription.zip(userDescription.indices.reverse)
 	.map((colPiece, exp) => ((colPiece - 64) * scala.math.pow(26, exp))).sum - 1).toInt	)
 
