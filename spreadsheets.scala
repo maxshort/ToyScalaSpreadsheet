@@ -239,5 +239,3 @@ def getCellAt(l: Location, sheet: Array[Array[Cell]]) =
 def tokenize(rawFormula: String): Array[String] =
 	//TODO: Add a trim...?
 	rawFormula.split("\\s+")
-
-
