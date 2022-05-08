@@ -26,9 +26,9 @@
 // 5. How to handle text/numbers that are too big for standard cell size??? 
 // 4.25 More mature parsing of both commands and formulas (E.g. whitespace)
 ///===
-// 4.5 Error checking (bounds checking, circular reference check) ,
+// 4.5 Error checking (bounds checking, circular reference check<Idea: Resolver object with a cellHistory + ref to sheet ??) ,
 // Easy but typedef the Sheet for all the 2d arrays
-// 6. View port - sheets too big.
+// 6. View port - sheets too big. - Primary issue here is how to "hint" at hidden parts of sheet.
 // 7. Figure out some concept of ranges in rows, cols, or both...e.g. I want to add all the numbers in row 1 or col B...
 // 8. Undo/command history would be cool but haven't thought how to implement. -- COULD ALSO pass a list of commands to the command line
       // -- useful for testing.
