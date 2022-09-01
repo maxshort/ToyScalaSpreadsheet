@@ -1,3 +1,5 @@
 *.tasty
 *.class
 *.bak
+# Coursier doesn't have other files in dir so assuming this is needed.
+null/
