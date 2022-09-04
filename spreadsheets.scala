@@ -137,8 +137,10 @@ def processCommand(rawCommand: String, rows: Array[Array[Cell]]) : Array[Array[C
 					case None => rows(rowIdx)(colIdx).value = Some(splitCommand(2))
 				case None => println("Provided location not recognized. No updates were applied")
 		case "DELETE" =>
-			translateCoords(splitCommand(1)) match
-				case Some(rowIdx: Int, colIdx: Int) => rows(rowIdx).update(colIdx, Cell(None))
+			locationFromUserDescription2(splitCommand(1)) match
+				case Some(l: Location) => rows(l.zeroBasedRow).update(l.zeroBasedCol, Cell(None))
+				case Some(row: RowLocation) => return deleteRow(row, rows)
+				case Some(col: ColumnLocation) => return deleteCol(col, rows)
 				case None => println("Provided location not recognized. No deletion executed")
 		case "MODE" => splitCommand(1) match
 				case "RESULT" => inResultMode = true
@@ -221,6 +223,14 @@ def transformForColInsertion(afterCol: ColumnLocation, formula: String): String 
 				case Some(location: Location) => if location.isAfterColumn(afterCol) then location.withColModification(1).toUserDescription else location.toUserDescription
 				case None => originalToken)
 		.mkString(" ")
+
+def deleteRow(row: RowLocation, sheet: Array[Array[Cell]]): Array[Array[Cell]] =
+	val rowIdx = row.zeroBasedLocation
+	sheet.slice(0, rowIdx).concat(sheet.slice(rowIdx + 1, sheet.length))
+
+def deleteCol(col: ColumnLocation, sheet: Array[Array[Cell]]): Array[Array[Cell]] =
+	val colIdx = col.zeroBasedLocation
+	sheet.map(row => row.slice(0, colIdx).concat(row.slice(colIdx + 1, row.length)))
 	
 // Returns None if not a valid location.
 // NOTE: AS IS throughout - not checking bounds, just the format of the location.

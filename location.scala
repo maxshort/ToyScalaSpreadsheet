@@ -41,6 +41,12 @@ class Location(col: ColumnLocation, row: RowLocation):
 		
 	def getRowColInternal(): (Int, Int) =
 		(this.row.zeroBasedLocation, this.col.zeroBasedLocation)
+
+	def zeroBasedRow : Int =
+		this.row.zeroBasedLocation
+
+	def zeroBasedCol : Int =
+		this.col.zeroBasedLocation
 		
 	def isAfterRow(otherRow: RowLocation) =
 		this.row.zeroBasedLocation > otherRow.zeroBasedLocation
@@ -56,3 +62,19 @@ def locationFromUserDescription(userDescription: String): Option[Location] =
 		}
 	else
 		None
+
+// (Could use a better name)
+// Someone has specified a location -- e.g. to delete. Figure out what it is and return it.
+def locationFromUserDescription2(externalDescription: String): Option[Location | ColumnLocation | RowLocation] =
+	locationFromUserDescription(externalDescription) match
+		case Some(l: Location) => Some(l)
+		case None => {
+			// Row pattern
+			if raw"[A-Z]+".r.matches(externalDescription) then
+				Some(colFromUserDescription(externalDescription))
+			// Col Pattern
+			else if raw"[0-9]+".r.matches(externalDescription) then
+				Some(rowFromUserDescription(externalDescription))
+			else
+				None
+		}
