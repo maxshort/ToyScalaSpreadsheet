@@ -94,12 +94,7 @@ def resolveTokenizedFormula(tokens: List[String]) : String =
 
 // Very messy, just for internal convenience -- doing int or blank
 def parseStringTemp(s: String): Array[Cell] =
-	s.split(",").map(item =>
-		try
-			Cell(Some(Integer.parseInt(item.trim)))
-		catch
-			case e: NumberFormatException => Cell(None)
-		)
+	s.split(",").map(item => Cell(item.trim.toIntOption))
 
 var inResultMode = true
 
@@ -117,12 +112,6 @@ var inResultMode = true
 		val userCommand = StdIn.readLine()
 		rows = processCommand(userCommand, rows)
 
-def extractInt(possibleInt: String): Option[Int] =
-	try
-		return Some(Integer.parseInt(possibleInt))
-	catch
-		case e: NumberFormatException => return None
-		
 // Both edits in place and/or may return new rows...
 def processCommand(rawCommand: String, rows: Array[Array[Cell]]) : Array[Array[Cell]] =
 	// Command syntax right now <Command> <Cell> <value> ; among others.
@@ -132,7 +121,7 @@ def processCommand(rawCommand: String, rows: Array[Array[Cell]]) : Array[Array[C
 	splitCommand(0) match
 		case "SET" =>
 			translateCoords(splitCommand(1)) match // Branch off of valid/invalid coordinate supplied
-				case Some(rowIdx: Int, colIdx: Int) => extractInt(splitCommand(2)) match // Branch off of different strings
+				case Some(rowIdx: Int, colIdx: Int) => splitCommand(2).toIntOption match // Branch off of different strings
 					case Some(i: Int) => rows(rowIdx).update(colIdx, Cell(Some(i)))
 					case None => rows(rowIdx)(colIdx).value = Some(splitCommand(2))
 				case None => println("Provided location not recognized. No updates were applied")
