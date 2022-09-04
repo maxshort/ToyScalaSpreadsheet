@@ -26,8 +26,10 @@
 // 5. How to handle text/numbers that are too big for standard cell size??? 
 // 4.25 More mature parsing of both commands and formulas (E.g. whitespace)
 ///===
+// 4.4 Handle non-formula strings (may require something like =SUM to set off formula mode...)
 // 4.5 Error checking (bounds checking, circular reference check<Idea: Resolver object with a cellHistory + ref to sheet ??) ,
 // Easy but typedef the Sheet for all the 2d arrays
+// 5. GROW-COLUMN to permanently enlarge cell...
 // 6. View port - sheets too big. - Primary issue here is how to "hint" at hidden parts of sheet.
 // 7. Figure out some concept of ranges in rows, cols, or both...e.g. I want to add all the numbers in row 1 or col B...
 // 8. Undo/command history would be cool but haven't thought how to implement. -- COULD ALSO pass a list of commands to the command line
@@ -58,7 +60,7 @@ class Cell(var value: ParsedCellValue):
 			case None => ""
 			case Some(i: Int) => i.toString()
 			case Some(f: Float) => f.toString()
-			case Some(s: String) => resolveFormula(s, sheet)
+			case Some(s: String) => resolveFormula(s, sheet).getOrElse("#REF")
   
 	// Almost certainly a better way to implement this.
 	def displayForFormulaMode: String = 
@@ -68,7 +70,7 @@ class Cell(var value: ParsedCellValue):
 			case Some(f: Float) => f.toString()
 			case Some(s: String) => s
 
-def resolveFormula(formula: String, sheetArray: Array[Array[Cell]]) : String =
+def resolveFormula(formula: String, sheetArray: Array[Array[Cell]]) : Option[String] =
 	val tokens = tokenize(formula)
 	val resolvedTokens = tokens.map(t => 
 		locationFromUserDescription(t) match
@@ -77,20 +79,32 @@ def resolveFormula(formula: String, sheetArray: Array[Array[Cell]]) : String =
 	resolveTokenizedFormula(resolvedTokens.toList)
 
 //Intended to have resolveFormula always called 1st.
-// ALSO: Intended to have all references resolved before calling...
-def resolveTokenizedFormula(tokens: List[String]) : String =
+// (this will not attempt to resolve references)
+// Returns None if it can't transform the expression to a single number.
+def resolveTokenizedFormula(tokens: List[String]) : Option[String] =
 	if (tokens.length == 1) {
-		return tokens.head
+		return Some(tokens.head)
+	}
+	// Either malformed expr or not an expr.
+	if (tokens.length < 3) {
+		return None
 	}
 	//TODO: Just starting with ints...Double can't be in cells referenced by a formula
-	val firstNum = Integer.parseInt(tokens.head)
-	val op = tokens.tail.head
-	//TODO: Scala can actually do == ? -- check to make sure we're not getting weird intern behavior (prob. not)
+
+	val firstNum = tokens.head.toIntOption
+
+	var op: Option[String] = Some(tokens.tail.head)
 	if (!op.equals("+")) {
-		throw new UnsupportedOperationException("Only + is supported as addition");
+		op = None
 	}
-	val secondNum = Integer.parseInt(tokens.tail.tail.head)
-	resolveTokenizedFormula( List((firstNum+secondNum).toString).concat(tokens.tail.tail.tail)) 
+	val secondNum = tokens.tail.tail.head.toIntOption
+	// All the option stuff seems like higher-order fns would be appropriate but can't think of exact and wouldn't know how to do in scala.
+	// So, if there's any empty stuff, we go to None.
+	// isEmpty for option is == None
+	val issues = List(firstNum, op, secondNum).filter(_.isEmpty)
+	issues.isEmpty match
+		case true => resolveTokenizedFormula( List((firstNum.get + secondNum.get).toString).concat(tokens.tail.tail.tail))
+		case false => None
 
 // Very messy, just for internal convenience -- doing int or blank
 def parseStringTemp(s: String): Array[Cell] =
