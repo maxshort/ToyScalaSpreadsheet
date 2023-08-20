@@ -9,6 +9,9 @@
 // and could probably be theoretically ported.
 
 // Plan of attack (incomplete but should be plenty)
+// 0. #REF fixes
+//   - BUG -- we don't handle cells that are part of formulas being deleted well. We should display a #ref and explanation instead of crashing.
+//   - Associate #ref messages with specific cells...
 // 1. Print the spread sheet (10x10) -- including blanks???
 // 2. Edit the cells
 // 3. Implement one equation operator (+)
