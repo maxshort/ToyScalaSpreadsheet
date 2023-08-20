@@ -3,15 +3,6 @@
 
 // REMINDER: Use scala3-compiler aND to run, always scala3
 
-// Command line "grammar"
-// SET A1 <insert text here>
-// DELETE A1
-// INSERT-BELOW INSERT-ABOVE
-// INSERT-LEFT-OF / INSERT-RIGHT-OF
-// DELETE-ROW / DELETE-COLUMN
-// MODE FORMULA
-// MODE RESULT
-
 // We'll try +, -, *, / hopefully infinetly ( have to write a parser) with references to other cells, 
 
 // Note: This would probably be better with something like ncurses but this is a learning exercise
