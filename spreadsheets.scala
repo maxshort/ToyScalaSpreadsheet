@@ -60,7 +60,13 @@ class Cell(var value: ParsedCellValue):
 			case None => ""
 			case Some(i: Int) => i.toString()
 			case Some(f: Float) => f.toString()
-			case Some(s: String) => resolveFormula(s, sheet).getOrElse("#REF")
+			case Some(s: String) => resolveFormula(s, sheet) match
+				case Left(errorS) =>
+					//TODO: Obviously very non-specific, need a reference to "user name of cell",
+					// in theory works OK if somebody just typed in the wrong formula...
+					println("Error in a cell: " + errorS)
+					"#REF"
+				case Right(cellResults) => cellResults
   
 	// Almost certainly a better way to implement this.
 	def displayForFormulaMode: String = 
@@ -70,7 +76,7 @@ class Cell(var value: ParsedCellValue):
 			case Some(f: Float) => f.toString()
 			case Some(s: String) => s
 
-def resolveFormula(formula: String, sheetArray: Array[Array[Cell]]) : Option[String] =
+def resolveFormula(formula: String, sheetArray: Array[Array[Cell]]) : Either[String, String] =
 	val tokens = tokenize(formula)
 	val resolvedTokens = tokens.map(t => 
 		locationFromUserDescription(t) match
@@ -80,31 +86,29 @@ def resolveFormula(formula: String, sheetArray: Array[Array[Cell]]) : Option[Str
 
 //Intended to have resolveFormula always called 1st.
 // (this will not attempt to resolve references)
-// Returns None if it can't transform the expression to a single number.
-def resolveTokenizedFormula(tokens: List[String]) : Option[String] =
+def resolveTokenizedFormula(tokens: List[String]) : Either[String, String] =
 	if (tokens.length == 1) {
-		return Some(tokens.head)
+		return Right(tokens.head)
 	}
 	// Either malformed expr or not an expr.
 	if (tokens.length < 3) {
-		return None
+		return Left("Wrong number of tokens in formula.")
 	}
 	//TODO: Just starting with ints...Double can't be in cells referenced by a formula
 
 	val firstNum = tokens.head.toIntOption
 
-	var op: Option[String] = Some(tokens.tail.head)
+	var op: String = tokens.tail.head
 	if (!op.equals("+")) {
-		op = None
+		return Left("Only + currently implemented");
 	}
 	val secondNum = tokens.tail.tail.head.toIntOption
-	// All the option stuff seems like higher-order fns would be appropriate but can't think of exact and wouldn't know how to do in scala.
-	// So, if there's any empty stuff, we go to None.
 	// isEmpty for option is == None
-	val issues = List(firstNum, op, secondNum).filter(_.isEmpty)
+	//TODO: Can problably refactor this paradigm...
+	val issues = List(firstNum, secondNum).filter(_.isEmpty)
 	issues.isEmpty match
 		case true => resolveTokenizedFormula( List((firstNum.get + secondNum.get).toString).concat(tokens.tail.tail.tail))
-		case false => None
+		case false => Left("First or second num not a number");
 
 // Very messy, just for internal convenience -- doing int or blank
 def parseStringTemp(s: String): Array[Cell] =
