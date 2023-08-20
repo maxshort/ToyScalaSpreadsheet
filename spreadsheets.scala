@@ -4,13 +4,13 @@
 // REMINDER: Use scala3-compiler aND to run, always scala3
 
 // Command line "grammar"
-// EDIT A1 <insert text here>
+// SET A1 <insert text here>
 // DELETE A1
 // INSERT-BELOW INSERT-ABOVE
 // INSERT-LEFT-OF / INSERT-RIGHT-OF
 // DELETE-ROW / DELETE-COLUMN
 // MODE FORMULA
-// MODE RESULTS
+// MODE RESULT
 
 // We'll try +, -, *, / hopefully infinetly ( have to write a parser) with references to other cells, 
 
